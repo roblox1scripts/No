@@ -1,12 +1,12 @@
--- [[ MEGA HUB V27: TEXT FEEDBACK UPDATE ]] --
+-- [[ MEGA HUB V28: SELECTION TEXT FIX ]] --
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
 
-if CoreGui:FindFirstChild("MegaHubV27") then CoreGui.MegaHubV27:Destroy() end
+if CoreGui:FindFirstChild("MegaHubV28") then CoreGui.MegaHubV28:Destroy() end
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.Name = "MegaHubV27"
+ScreenGui.Name = "MegaHubV28"
 
 -- --- BOT REACTION SYSTEM ---
 local function BotReact(emoji)
@@ -27,8 +27,8 @@ Instance.new("UICorner", PetWin)
 
 local PStatus = Instance.new("TextLabel", PetWin)
 PStatus.Size = UDim2.new(1, 0, 0, 20) PStatus.Position = UDim2.new(0, 0, 0.92, 0)
-PStatus.Text = "Ready..." PStatus.TextColor3 = Color3.new(0.7, 0.7, 0.7)
-PStatus.BackgroundTransparency = 1 PStatus.TextSize = 12
+PStatus.Text = "Waiting for selection..." PStatus.TextColor3 = Color3.new(0, 1, 0.8)
+PStatus.BackgroundTransparency = 1 PStatus.TextSize = 14 PStatus.Font = "GothamBold"
 
 local PInput = Instance.new("TextBox", PetWin)
 PInput.Size = UDim2.new(0.9, 0, 0, 40) PInput.Position = UDim2.new(0.05, 0, 0.15, 0)
@@ -43,7 +43,7 @@ local function GetMode()
     if Selected.M then s = "M" elseif Selected.N then s = "N" end
     if Selected.F then s = s .. "F" end
     if Selected.R then s = s .. "R" end
-    return s == "" and "Normal" or s
+    return s
 end
 
 local pfrnm = Instance.new("Frame", PetWin)
@@ -60,20 +60,26 @@ local function CreatePToggle(t, c)
         if t == "M" and Selected.M then Selected.N = false end
         if t == "N" and Selected.N then Selected.M = false end
         for txt, btn in pairs(PBtns) do btn.BackgroundColor3 = Selected[txt] and Color3.fromRGB(100, 100, 100) or Color3.fromRGB(30, 30, 30) end
-        PStatus.Text = "You have selected: " .. GetMode() -- CUSTOM TEXT
+        
+        local current = GetMode()
+        if current ~= "" then
+            PStatus.Text = "You have selected: " .. current -- NEW: Selection text
+        else
+            PStatus.Text = "Normal Mode Selected"
+        end
     end)
 end
 CreatePToggle("F", Color3.new(0, 0.6, 1)) CreatePToggle("R", Color3.new(1, 0, 0.6)) 
-CreatePToggle("N", Color3.new(0, 1, 0.4)) CreatePToggle("M", Color3.new(0.6, 1, 0))
+CreatePToggle("N", Color3.new(0, 1, 0.4)) CreateToggle("M", Color3.new(0.6, 1, 0))
 
 local PSpawn = Instance.new("TextButton", PetWin)
 PSpawn.Size = UDim2.new(0.9, 0, 0, 40) PSpawn.Position = UDim2.new(0.05, 0, 0.75, 0)
 PSpawn.Text = "Spawn Pet" PSpawn.BackgroundColor3 = Color3.fromRGB(0, 100, 200) PSpawn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", PSpawn)
 PSpawn.MouseButton1Click:Connect(function()
-    PStatus.Text = "Successfully spawned pet!" -- CUSTOM TEXT
+    PStatus.Text = "Successfully spawned pet!" -- NEW: Spawn text
     local fake = Instance.new("Tool", LP.Backpack)
-    fake.Name = GetMode() .. " " .. PInput.Text
+    fake.Name = (GetMode() ~= "" and GetMode().." " or "") .. PInput.Text
 end)
 
 -- --- TOY SPAWNER WINDOW ---
@@ -85,8 +91,8 @@ Instance.new("UICorner", ToyWin)
 
 local TStatus = Instance.new("TextLabel", ToyWin)
 TStatus.Size = UDim2.new(1, 0, 0, 20) TStatus.Position = UDim2.new(0, 0, 0.88, 0)
-TStatus.Text = "Ready..." TStatus.TextColor3 = Color3.new(0.7, 0.7, 0.7)
-TStatus.BackgroundTransparency = 1 TStatus.TextSize = 12
+TStatus.Text = "Ready..." TStatus.TextColor3 = Color3.new(1, 0.5, 0)
+TStatus.BackgroundTransparency = 1 TStatus.TextSize = 14 TStatus.Font = "GothamBold"
 
 local TInput = Instance.new("TextBox", ToyWin)
 TInput.Size = UDim2.new(0.9, 0, 0, 40) TInput.Position = UDim2.new(0.05, 0, 0.25, 0)
@@ -98,7 +104,7 @@ TSpawn.Size = UDim2.new(0.9, 0, 0, 40) TSpawn.Position = UDim2.new(0.05, 0, 0.6,
 TSpawn.Text = "Spawn Toy" TSpawn.BackgroundColor3 = Color3.fromRGB(200, 100, 0) TSpawn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", TSpawn)
 TSpawn.MouseButton1Click:Connect(function()
-    TStatus.Text = "Successfully spawned toy!" -- CUSTOM TEXT
+    TStatus.Text = "Successfully spawned toy!" -- NEW: Spawn text
     local fake = Instance.new("Tool", LP.Backpack)
     fake.Name = "[TOY] " .. TInput.Text
 end)
