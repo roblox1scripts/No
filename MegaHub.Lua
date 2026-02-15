@@ -1,12 +1,14 @@
--- [[ MEGA HUB V28: SELECTION TEXT FIX ]] --
+-- [[ MEGA HUB V29: STABLE GUI + TEXT FEEDBACK ]] --
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
 
-if CoreGui:FindFirstChild("MegaHubV28") then CoreGui.MegaHubV28:Destroy() end
+-- Clean up any old versions
+if CoreGui:FindFirstChild("MegaHubV29") then CoreGui.MegaHubV29:Destroy() end
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.Name = "MegaHubV28"
+ScreenGui.Name = "MegaHubV29"
+ScreenGui.ResetOnSpawn = false
 
 -- --- BOT REACTION SYSTEM ---
 local function BotReact(emoji)
@@ -26,8 +28,8 @@ PetWin.BorderColor3 = Color3.fromRGB(0, 255, 200) PetWin.Visible = false PetWin.
 Instance.new("UICorner", PetWin)
 
 local PStatus = Instance.new("TextLabel", PetWin)
-PStatus.Size = UDim2.new(1, 0, 0, 20) PStatus.Position = UDim2.new(0, 0, 0.92, 0)
-PStatus.Text = "Waiting for selection..." PStatus.TextColor3 = Color3.new(0, 1, 0.8)
+PStatus.Size = UDim2.new(1, 0, 0, 30) PStatus.Position = UDim2.new(0, 0, 0.88, 0)
+PStatus.Text = "No selection made" PStatus.TextColor3 = Color3.new(0, 1, 0.8)
 PStatus.BackgroundTransparency = 1 PStatus.TextSize = 14 PStatus.Font = "GothamBold"
 
 local PInput = Instance.new("TextBox", PetWin)
@@ -38,12 +40,14 @@ PInput.TextColor3 = Color3.new(1,1,1) Instance.new("UICorner", PInput)
 -- PET TOGGLES LOGIC
 local Selected = {F = false, R = false, N = false, M = false}
 local PBtns = {}
-local function GetMode()
+local function UpdatePetStatus()
     local s = ""
     if Selected.M then s = "M" elseif Selected.N then s = "N" end
     if Selected.F then s = s .. "F" end
     if Selected.R then s = s .. "R" end
-    return s
+    local finalMode = s == "" and "Normal" or s
+    PStatus.Text = "You have selected: " .. finalMode -- Fixed selection text
+    return finalMode
 end
 
 local pfrnm = Instance.new("Frame", PetWin)
@@ -59,27 +63,24 @@ local function CreatePToggle(t, c)
         Selected[t] = not Selected[t]
         if t == "M" and Selected.M then Selected.N = false end
         if t == "N" and Selected.N then Selected.M = false end
-        for txt, btn in pairs(PBtns) do btn.BackgroundColor3 = Selected[txt] and Color3.fromRGB(100, 100, 100) or Color3.fromRGB(30, 30, 30) end
-        
-        local current = GetMode()
-        if current ~= "" then
-            PStatus.Text = "You have selected: " .. current -- NEW: Selection text
-        else
-            PStatus.Text = "Normal Mode Selected"
+        for txt, btn in pairs(PBtns) do 
+            btn.BackgroundColor3 = Selected[txt] and Color3.fromRGB(80, 80, 80) or Color3.fromRGB(30, 30, 30) 
         end
+        UpdatePetStatus()
     end)
 end
 CreatePToggle("F", Color3.new(0, 0.6, 1)) CreatePToggle("R", Color3.new(1, 0, 0.6)) 
-CreatePToggle("N", Color3.new(0, 1, 0.4)) CreateToggle("M", Color3.new(0.6, 1, 0))
+CreatePToggle("N", Color3.new(0, 1, 0.4)) CreatePToggle("M", Color3.new(0.6, 1, 0))
 
 local PSpawn = Instance.new("TextButton", PetWin)
 PSpawn.Size = UDim2.new(0.9, 0, 0, 40) PSpawn.Position = UDim2.new(0.05, 0, 0.75, 0)
 PSpawn.Text = "Spawn Pet" PSpawn.BackgroundColor3 = Color3.fromRGB(0, 100, 200) PSpawn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", PSpawn)
 PSpawn.MouseButton1Click:Connect(function()
-    PStatus.Text = "Successfully spawned pet!" -- NEW: Spawn text
+    PStatus.Text = "Successfully spawned pet!" -- Fixed spawn text
     local fake = Instance.new("Tool", LP.Backpack)
-    fake.Name = (GetMode() ~= "" and GetMode().." " or "") .. PInput.Text
+    local mode = UpdatePetStatus()
+    fake.Name = (mode == "Normal" and "" or mode.." ") .. PInput.Text
 end)
 
 -- --- TOY SPAWNER WINDOW ---
@@ -90,8 +91,8 @@ ToyWin.BorderColor3 = Color3.fromRGB(0, 255, 200) ToyWin.Visible = false ToyWin.
 Instance.new("UICorner", ToyWin)
 
 local TStatus = Instance.new("TextLabel", ToyWin)
-TStatus.Size = UDim2.new(1, 0, 0, 20) TStatus.Position = UDim2.new(0, 0, 0.88, 0)
-TStatus.Text = "Ready..." TStatus.TextColor3 = Color3.new(1, 0.5, 0)
+TStatus.Size = UDim2.new(1, 0, 0, 20) TStatus.Position = UDim2.new(0, 0, 0.85, 0)
+TStatus.Text = "Waiting for toy input..." TStatus.TextColor3 = Color3.new(1, 0.5, 0)
 TStatus.BackgroundTransparency = 1 TStatus.TextSize = 14 TStatus.Font = "GothamBold"
 
 local TInput = Instance.new("TextBox", ToyWin)
@@ -104,7 +105,7 @@ TSpawn.Size = UDim2.new(0.9, 0, 0, 40) TSpawn.Position = UDim2.new(0.05, 0, 0.6,
 TSpawn.Text = "Spawn Toy" TSpawn.BackgroundColor3 = Color3.fromRGB(200, 100, 0) TSpawn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", TSpawn)
 TSpawn.MouseButton1Click:Connect(function()
-    TStatus.Text = "Successfully spawned toy!" -- NEW: Spawn text
+    TStatus.Text = "Successfully spawned toy!" -- Fixed toy spawn text
     local fake = Instance.new("Tool", LP.Backpack)
     fake.Name = "[TOY] " .. TInput.Text
 end)
@@ -118,11 +119,11 @@ Instance.new("UICorner", Main)
 local Side = Instance.new("Frame", Main)
 Side.Size = UDim2.new(0, 150, 1, -40) Side.Position = UDim2.new(0, 0, 0, 40)
 Side.BackgroundColor3 = Color3.fromRGB(20, 20, 20) Instance.new("UICorner", Side)
-Instance.new("UIListLayout", Side).Padding = UDim.new(0, 10)
+local SideLayout = Instance.new("UIListLayout", Side) SideLayout.Padding = UDim.new(0, 5)
 
 local function Nav(txt, icon, func)
     local b = Instance.new("TextButton", Side)
-    b.Size = UDim2.new(1, 0, 0, 50) b.Text = "  " .. icon .. " " .. txt
+    b.Size = UDim2.new(1, 0, 0, 45) b.Text = "  " .. icon .. " " .. txt
     b.TextColor3 = Color3.new(1,1,1) b.BackgroundTransparency = 1
     b.TextXAlignment = Enum.TextXAlignment.Left
     b.MouseButton1Click:Connect(func)
