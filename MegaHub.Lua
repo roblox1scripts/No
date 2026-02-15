@@ -1,12 +1,13 @@
--- [[ MEGA HUB V30: COLOR-CODED SELECTION TEXT ]] --
+-- [[ MEGA HUB V31: RAINBOW SELECTION UPDATE ]] --
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local StarterGui = game:GetService("StarterGui")
+local RunService = game:GetService("RunService")
 
-if CoreGui:FindFirstChild("MegaHubV30") then CoreGui.MegaHubV29:Destroy() end
+if CoreGui:FindFirstChild("MegaHubV31") then CoreGui.MegaHubV31:Destroy() end
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.Name = "MegaHubV30"
+ScreenGui.Name = "MegaHubV31"
 ScreenGui.ResetOnSpawn = false
 
 -- --- BOT REACTION SYSTEM ---
@@ -31,20 +32,21 @@ PStatus.Size = UDim2.new(1, 0, 0, 30) PStatus.Position = UDim2.new(0, 0, 0.88, 0
 PStatus.Text = "Waiting for selection..." PStatus.TextColor3 = Color3.new(1, 1, 1)
 PStatus.BackgroundTransparency = 1 PStatus.TextSize = 14 PStatus.Font = "GothamBold"
 
+-- RAINBOW LOGIC
+local IsRainbow = false
+RunService.RenderStepped:Connect(function()
+    if IsRainbow then
+        local hue = tick() % 3 / 3
+        PStatus.TextColor3 = Color3.fromHSV(hue, 1, 1)
+    end
+end)
+
 local PInput = Instance.new("TextBox", PetWin)
 PInput.Size = UDim2.new(0.9, 0, 0, 40) PInput.Position = UDim2.new(0.05, 0, 0.15, 0)
 PInput.PlaceholderText = "Enter Pet Name" PInput.BackgroundColor3 = Color3.fromRGB(45, 47, 52)
 PInput.TextColor3 = Color3.new(1,1,1) Instance.new("UICorner", PInput)
 
--- COLOR MAP
-local Colors = {
-    F = Color3.new(0, 0.6, 1),   -- Blue
-    R = Color3.new(1, 0, 0.6),   -- Pink
-    N = Color3.new(0, 1, 0.4),   -- Neon Green
-    M = Color3.new(0.6, 1, 0)    -- Mega Green
-}
-
--- PET TOGGLES LOGIC
+local Colors = { F = Color3.new(0, 0.6, 1), R = Color3.new(1, 0, 0.6), N = Color3.new(0, 1, 0.4), M = Color3.new(0.6, 1, 0) }
 local Selected = {F = false, R = false, N = false, M = false}
 local PBtns = {}
 
@@ -57,11 +59,13 @@ local function UpdatePetStatus(lastColor)
     local finalMode = s == "" and "Normal" or s
     PStatus.Text = "You have selected: " .. finalMode
     
-    -- Set text color to match the last button pressed
-    if lastColor then
-        PStatus.TextColor3 = lastColor
-    elseif s == "" then
-        PStatus.TextColor3 = Color3.new(1, 1, 1)
+    -- Check for Rainbow (All selected)
+    -- Note: Since M and N are exclusive, we check for the max combo possible
+    if (Selected.M or Selected.N) and Selected.F and Selected.R then
+        IsRainbow = true
+    else
+        IsRainbow = false
+        if lastColor then PStatus.TextColor3 = lastColor end
     end
     
     return finalMode
@@ -78,12 +82,14 @@ local function CreatePToggle(t, c)
     PBtns[t] = b
     b.MouseButton1Click:Connect(function()
         Selected[t] = not Selected[t]
+        -- M and N logic
         if t == "M" and Selected.M then Selected.N = false end
         if t == "N" and Selected.N then Selected.M = false end
+        
         for txt, btn in pairs(PBtns) do 
             btn.BackgroundColor3 = Selected[txt] and Color3.fromRGB(80, 80, 80) or Color3.fromRGB(30, 30, 30) 
         end
-        UpdatePetStatus(c) -- Pass the button color to the status text
+        UpdatePetStatus(c)
     end)
 end
 
@@ -95,11 +101,12 @@ PSpawn.Size = UDim2.new(0.9, 0, 0, 40) PSpawn.Position = UDim2.new(0.05, 0, 0.75
 PSpawn.Text = "Spawn Pet" PSpawn.BackgroundColor3 = Color3.fromRGB(0, 100, 200) PSpawn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", PSpawn)
 PSpawn.MouseButton1Click:Connect(function()
+    IsRainbow = false
     PStatus.Text = "Successfully spawned pet!"
-    PStatus.TextColor3 = Color3.new(0, 1, 0) -- Success Green
+    PStatus.TextColor3 = Color3.new(0, 1, 0)
     local fake = Instance.new("Tool", LP.Backpack)
-    local mode = UpdatePetStatus()
-    fake.Name = (mode == "Normal" and "" or mode.." ") .. PInput.Text
+    local mode = (Selected.M and "M" or (Selected.N and "N" or "")) .. (Selected.F and "F" or "") .. (Selected.R and "R" or "")
+    fake.Name = (mode == "" and "" or mode.." ") .. PInput.Text
 end)
 
 -- --- TOY SPAWNER WINDOW ---
@@ -111,7 +118,7 @@ Instance.new("UICorner", ToyWin)
 
 local TStatus = Instance.new("TextLabel", ToyWin)
 TStatus.Size = UDim2.new(1, 0, 0, 20) TStatus.Position = UDim2.new(0, 0, 0.85, 0)
-TStatus.Text = "Waiting for toy input..." TStatus.TextColor3 = Color3.new(1, 0.5, 0)
+TStatus.Text = "Ready to spawn toys..." TStatus.TextColor3 = Color3.new(1, 0.5, 0)
 TStatus.BackgroundTransparency = 1 TStatus.TextSize = 14 TStatus.Font = "GothamBold"
 
 local TInput = Instance.new("TextBox", ToyWin)
@@ -139,7 +146,7 @@ Instance.new("UICorner", Main)
 local Side = Instance.new("Frame", Main)
 Side.Size = UDim2.new(0, 150, 1, -40) Side.Position = UDim2.new(0, 0, 0, 40)
 Side.BackgroundColor3 = Color3.fromRGB(20, 20, 20) Instance.new("UICorner", Side)
-local SideLayout = Instance.new("UIListLayout", Side) SideLayout.Padding = UDim.new(0, 5)
+Instance.new("UIListLayout", Side).Padding = UDim.new(0, 5)
 
 local function Nav(txt, icon, func)
     local b = Instance.new("TextButton", Side)
